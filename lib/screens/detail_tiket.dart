@@ -4,6 +4,8 @@ import 'package:tiket_srimanganti/screens/checkout_screen.dart';
 
 import '../services/supabase_service.dart';
 import '../services/currency_service.dart';
+import '../models/favorite_show.dart';
+import '../services/favorite_service.dart';
 
 enum _Currency { idr, usd, eur, jpy }
 enum _Category { wni, wna }
@@ -163,7 +165,16 @@ class _ShowDetailScreenState extends State<ShowDetailScreen> {
     );
   }
 
+  // ============ TOP BAR + TOMBOL FAVORIT ============
   Widget _buildTopBar() {
+    final favShow = FavoriteShow(
+      title: widget.title,
+      day: widget.day,
+      image: widget.image,
+      description: widget.description,
+    );
+    final isFav = FavoriteService.isFavorite(widget.title);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: Row(
@@ -177,6 +188,27 @@ class _ShowDetailScreenState extends State<ShowDetailScreen> {
               'Detail Pentas',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: _kGreen),
             ),
+          ),
+          IconButton(
+            tooltip: isFav ? 'Hapus dari favorit' : 'Tambah ke favorit',
+            icon: Icon(
+              isFav ? Icons.favorite : Icons.favorite_border,
+              color: isFav ? const Color(0xFFE74C3C) : _kGreen,
+            ),
+            onPressed: () async {
+              final nowFav = await FavoriteService.toggle(favShow);
+              if (!mounted) return;
+              setState(() {});
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(nowFav ? 'Ditambahkan ke favorit ❤️' : 'Dihapus dari favorit'),
+                  duration: const Duration(seconds: 2),
+                  backgroundColor: nowFav ? const Color(0xFF1A3C34) : const Color(0xFF6B7A75),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -456,68 +488,83 @@ class _ShowDetailScreenState extends State<ShowDetailScreen> {
     );
   }
 
+  // ============ BOTTOM BAR (rekonstruksi — sesuaikan dengan versi asli kamu) ============
   Widget _buildBottomBar() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, -3))],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('KATEGORI DIPILIH', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.6, color: Color(0xFF9AA6A2))),
-                const SizedBox(height: 2),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  child: Text(_categoryName, key: ValueKey(_categoryName), overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _kGreen)),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _kGreen,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-              shape: const StadiumBorder(),
-            ),
-            onPressed: () {
-              int hargaTiket = _basePriceIdr[_category]!;
-              String namaKategori = _category == _Category.wni ? 'WNI Reguler' : 'WNA Foreigner';
-              Navigator.push(
-                context, 
-                MaterialPageRoute(
-                  builder: (context) => CheckoutScreen(
-                    title: widget.title, 
-                    basePrice: hargaTiket, 
-                    categoryName: namaKategori,
-                    imageAsset: widget.image,
-                    day: widget.day, // <-- TAMBAHAN UNTUK GAMBAR
-                  )
-                )
-              );
-            },
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Pesan Tiket', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                SizedBox(width: 8),
-                Icon(Icons.arrow_forward, size: 18),
-              ],
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
           ),
         ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'HARGA MULAI DARI',
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: _kMuted),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _isLoadingRates
+                        ? '...'
+                        : '${_formatPrice(_basePriceIdr[_category]!, _currency, _idrRates)} / orang',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _kGreen),
+                  ),
+                ],
+              ),
+            ),
+            ElevatedButton(
+              onPressed: _isLoadingRates
+                  ? null
+                  : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CheckoutScreen(
+                            title: widget.title,
+                            basePrice: _basePriceIdr[_category]!,
+                            categoryName: _categoryName,
+                            imageAsset: widget.image,
+                            day: widget.day,
+                          ),
+                        ),
+                      );
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _kGreen,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Beli Tiket', style: TextStyle(fontWeight: FontWeight.bold)),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_forward, size: 16),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
+// =================== WIDGET PENDUKUNG ===================
 
 class _CurrencySelector extends StatelessWidget {
   final _Currency selected;
@@ -527,52 +574,31 @@ class _CurrencySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const values = _Currency.values;
-    final index = values.indexOf(selected);
-
-    return Container(
-      height: 42,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: const Color(0xFFF1F4F6), borderRadius: BorderRadius.circular(14)),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final segW = constraints.maxWidth / values.length;
-          return Stack(
-            children: [
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOutCubic,
-                left: segW * index,
-                top: 0,
-                bottom: 0,
-                width: segW,
-                child: Container(decoration: BoxDecoration(color: _kGreen, borderRadius: BorderRadius.circular(10))),
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: _Currency.values.map((c) {
+        final isSelected = c == selected;
+        return GestureDetector(
+          onTap: () => onChanged(c),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected ? _kGreen : Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: isSelected ? _kGreen : _kBorder),
+            ),
+            child: Text(
+              _currencyLabel[c]!,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? Colors.white : _kGreen,
               ),
-              Row(
-                children: values.map((c) {
-                  final isSel = c == selected;
-                  return Expanded(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => onChanged(c),
-                      child: Center(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 200),
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isSel ? Colors.white : _kMuted),
-                            child: Text(_currencyLabel[c]!),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          );
-        },
-      ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
@@ -583,57 +609,36 @@ class _CategoryTile extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const _CategoryTile({required this.title, required this.price, required this.selected, required this.onTap});
+  const _CategoryTile({
+    required this.title,
+    required this.price,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    const duration = Duration(milliseconds: 250);
-
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: duration,
-        curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Container(
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: selected ? _kGreen : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: selected ? _kGreen : const Color(0xFFE3E8EC)),
+          color: selected ? const Color(0xFFE8F1EE) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: selected ? _kGreen : _kBorder, width: selected ? 1.5 : 1),
         ),
         child: Row(
           children: [
+            Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off, color: selected ? _kGreen : _kMuted, size: 20),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AnimatedDefaultTextStyle(
-                    duration: duration,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: selected ? Colors.white : _kGreen),
-                    child: Text(title),
-                  ),
-                  const SizedBox(height: 3),
-                  AnimatedDefaultTextStyle(
-                    duration: duration,
-                    style: TextStyle(fontSize: 12, color: selected ? const Color(0xFFCFE0DA) : _kMuted),
-                    child: Text(price),
-                  ),
+                  Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _kGreen)),
+                  const SizedBox(height: 2),
+                  Text(price, style: const TextStyle(fontSize: 12, color: _kMuted)),
                 ],
-              ),
-            ),
-            AnimatedContainer(
-              duration: duration,
-              width: 22,
-              height: 22,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: selected ? _kGoldSoft : const Color(0xFFCBD3D8), width: 2),
-              ),
-              child: AnimatedScale(
-                scale: selected ? 1 : 0,
-                duration: duration,
-                curve: Curves.easeOutBack,
-                child: Container(width: 10, height: 10, decoration: const BoxDecoration(shape: BoxShape.circle, color: _kGoldSoft)),
               ),
             ),
           ],

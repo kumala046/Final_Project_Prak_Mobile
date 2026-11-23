@@ -6,7 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import '../services/db_helper.dart';
 import '../services/supabase_service.dart';
 import 'auth_screen.dart';
-import 'about_developer_screen.dart'; // <-- IMPORT HALAMAN BARU
+import 'about_developer_screen.dart';
+import 'favorites_page.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -579,7 +580,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 }),
                               ),
                               const Divider(height: 1),
-                              // MENU BARU: TENTANG DEVELOPER
+
+                              ListTile(
+                                leading: const Icon(
+                                  Icons.favorite_border_outlined,
+                                  color: Color(0xFF0B3D2E),
+                                ),
+                                title: const Text(
+                                  'Pagelaran Favorit',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: const Text(
+                                  'Daftar pentas yang kamu sukai',
+                                  style: TextStyle(fontSize: 11),
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const FavoritesPage(),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const Divider(height: 1),
+
                               ListTile(
                                 leading: const Icon(
                                   Icons.info_outline,
@@ -606,48 +634,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 },
                               ),
                               const Divider(height: 1),
-                              // TOMBOL RESET DATA LOKAL
-                              ListTile(
-                                leading: const Icon(
-                                  Icons.delete_forever,
-                                  color: Colors.red,
-                                ),
-                                title: const Text(
-                                  'Reset Data Lokal (Cache)',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                                subtitle: const Text(
-                                  'Hapus data lama di HP, ambil ulang dari Supabase',
-                                  style: TextStyle(fontSize: 11),
-                                ),
-                                onTap: () async {
-                                  await DBHelper().hapusSesi();
-                                  final db = await DBHelper().database;
-                                  await db.delete('users');
-
-                                  if (!mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Cache lokal berhasil dihapus. Silakan login ulang.',
-                                      ),
-                                      backgroundColor: Colors.green,
-                                    ),
-                                  );
-
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const AuthScreen(),
-                                    ),
-                                    (route) => false,
-                                  );
-                                },
-                              ),
                             ],
                           ),
                         ),

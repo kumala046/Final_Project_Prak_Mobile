@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
+import 'models/favorite_show.dart'; 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +17,9 @@ Future<void> main() async {
     anonKey: 'sb_publishable__oM_IvEUvWU2b_gDwHwtVA_GtZ_ZLAb',
   );
 
+  await Hive.initFlutter(); 
+  Hive.registerAdapter(FavoriteShowAdapter()); 
+  await Hive.openBox<FavoriteShow>('favorites'); 
   await NotificationService.init();
 
   runApp(const MyApp());
