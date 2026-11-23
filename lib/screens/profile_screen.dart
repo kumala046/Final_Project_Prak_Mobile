@@ -6,7 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import '../services/db_helper.dart';
 import '../services/supabase_service.dart';
 import 'auth_screen.dart';
-import 'about_developer_screen.dart'; // <-- IMPORT HALAMAN BARU
+import 'about_developer_screen.dart'; 
+import 'favorites_page.dart'; 
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -579,6 +580,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 }),
                               ),
                               const Divider(height: 1),
+
+                              // MENU FAVORIT SAYA
+                              ListTile(
+                                leading: const Icon(
+                                  Icons.favorite,
+                                  color: Color(0xFF1A3C34), 
+                                ),
+                                title: const Text(
+                                  'Favorit Saya',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: const Text(
+                                  'Daftar acara pementasan yang disukai',
+                                  style: TextStyle(fontSize: 11),
+                                ),
+                                
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const FavoritesPage(),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const Divider(height: 1),
+
                               // MENU BARU: TENTANG DEVELOPER
                               ListTile(
                                 leading: const Icon(

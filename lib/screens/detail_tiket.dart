@@ -5,6 +5,9 @@ import 'package:tiket_srimanganti/screens/checkout_screen.dart';
 import '../services/supabase_service.dart';
 import '../services/currency_service.dart';
 
+import '../models/favorite_show.dart';
+import '../services/favorite_service.dart';
+
 enum _Currency { idr, usd, eur, jpy }
 enum _Category { wni, wna }
 
@@ -67,6 +70,7 @@ class ShowDetailScreen extends StatefulWidget {
 }
 
 class _ShowDetailScreenState extends State<ShowDetailScreen> {
+  bool _isFavorite = false; 
   _Currency _currency = _Currency.idr;
   _Category _category = _Category.wni;
   List<Map<String, dynamic>> _ulasanList = [];
@@ -80,8 +84,39 @@ class _ShowDetailScreenState extends State<ShowDetailScreen> {
   @override
   void initState() {
     super.initState();
+
+    _isFavorite = FavoriteService.isFavorite(widget.title);
+
     _loadUlasan();
     _loadRates();
+  }
+
+  Future<void> _toggleFavorite() async {
+    final show = FavoriteShow(
+      title: widget.title,
+      day: widget.day,
+      image: widget.image,
+      description: widget.description,
+    );
+
+    final saved = await FavoriteService.toggle(show);
+
+    if (!mounted) return;
+
+    setState(() {
+      _isFavorite = saved;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          saved
+              ? 'Berhasil ditambahkan ke favorit!'
+              : 'Berhasil dihapus dari favorit!',
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   Future<void> _loadRates() async {
@@ -254,6 +289,31 @@ class _ShowDetailScreenState extends State<ShowDetailScreen> {
               ],
             ),
           ),
+
+          Positioned(
+            top: 12,
+            right: 12,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.95),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                tooltip: _isFavorite
+                    ? 'Hapus dari favorit'
+                    : 'Tambahkan ke favorit',
+                onPressed: _toggleFavorite,
+                icon: Icon(
+                  _isFavorite
+                      ? Icons.favorite
+                      : Icons.favorite_border,
+                  color: _isFavorite ? Colors.red : _kGreen,
+                  size: 24,
+                ),
+              ),
+            ),
+          ),
+
         ],
       ),
     );
