@@ -202,7 +202,8 @@ class _ShowDetailScreenState extends State<ShowDetailScreen> {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(nowFav ? 'Ditambahkan ke favorit ❤️' : 'Dihapus dari favorit'),
+                  // content: Text(nowFav ? 'Ditambahkan ke favorit ❤️' : 'Dihapus dari favorit'),
+                  content: Text(nowFav ? 'Ditambahkan ke favorit' : 'Dihapus dari favorit'),
                   duration: const Duration(seconds: 2),
                   backgroundColor: nowFav ? const Color(0xFF1A3C34) : const Color(0xFF6B7A75),
                   behavior: SnackBarBehavior.floating,

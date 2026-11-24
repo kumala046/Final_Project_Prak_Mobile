@@ -96,9 +96,7 @@ class _AboutDeveloperScreenState extends State<AboutDeveloperScreen> {
                 const SizedBox(height: 16),
                 _buildMemberCard('Alvina Kumala Budiastuti', '124240046'),
                 const SizedBox(height: 8),
-                _buildMemberCard('Dhiara Ayu Nasta', '124240185'),
-                const SizedBox(height: 8),
-                _buildMemberCard('Nurisshifa Alfiyana', '124240186'),
+                _buildMemberCard('Chairun Feyza Hersaputri', '124240105'),
               ],
             ),
           ),
@@ -130,7 +128,7 @@ class _AboutDeveloperScreenState extends State<AboutDeveloperScreen> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Kesan & Pesan Kuliah Pemrograman Aplikasi Mobile (PAM)',
+                  'Kesan & Pesan Kuliah Praktikum Pemrograman Aplikasi Mobile (PAM)',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 15,
@@ -139,7 +137,7 @@ class _AboutDeveloperScreenState extends State<AboutDeveloperScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  '"Jujur, ngerjain proyek ini bikin jam tidur kami berkurang dan sering begadang. Banyak revisi dan error yang bikin pusing. Tapi dari proses ini kami jadi tahu hal-hal yang sebelumnya nggak kami ngerti. Kami jadi tau gimana cara bikin aplikasi. Pokoknya, ini pengalaman yang bikin capek tapi kami jadi tau banyak hal baru."',
+                  '"Praktikum Mobile mantap, terima kasih untuk kakak-kakak asisten yang sudah sabar membimbing dan membantu kami walaupun kami sering ngantuk di lab. Semoga ilmunya berkah, bermanfaat, dan semoga kakak-kakak asisten dilancarkan untuk skripsinya sampai lulus. Aamiin"',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
